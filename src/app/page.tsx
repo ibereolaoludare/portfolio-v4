@@ -9,7 +9,7 @@ export default function Home() {
     return (
         <>
             <PhaserGame gameKey={gameKey} />
-            <button className="fixed top-10 right-10" onClick={() => setGameKey((k) => k + 1)}>Reset Game</button>
+            <button className="fixed bottom-10 left-10 bg-white uppercase font-mono p-2 border-4 border-orange-900" tabIndex={undefined} onClick={() => setGameKey((k) => k + 1)}>Reset Game</button>
         </>
     );
 }

@@ -26,7 +26,7 @@ class GameScene extends Phaser.Scene {
 
     // Animation and timing
     lastMoveTime: number = 0;
-    moveInterval: number = 1000 / 5;
+    moveInterval: number = 1000 / 8;
     defaultPlayerTileX: number = 0;
     defaultPlayerTileY: number = 0;
     idleFrameInterval: number = 1000 / 8; // ms per idle frame
@@ -42,6 +42,7 @@ class GameScene extends Phaser.Scene {
     // Add these properties to your class:
     lastPointerX: number = 0;
     lastPointerY: number = 0;
+    clouds: Phaser.GameObjects.Sprite[] = [];
 
     constructor() {
         super("scene-game");
@@ -245,11 +246,30 @@ class GameScene extends Phaser.Scene {
             .setOrigin(0, 0)
             .setScale(5);
 
+        this.add
+            .sprite(this.scale.width / 1.08, this.scale.height / 7, "sun")
+            .setOrigin(0.5, 0.5)
+            .setScale(5);
+
+            const cloud1 = this.add
+            .sprite(this.scale.width / 1.5, this.scale.height / 9, "cloud")
+            .setOrigin(0.5, 0.5)
+            .setScale(2.5)
+            .setAlpha(0.8);
+        
+        const cloud2 = this.add
+            .sprite(this.scale.width / 9, this.scale.height / 6, "cloud-2")
+            .setOrigin(0.5, 0.5)
+            .setScale(2.5)
+            .setAlpha(0.5);
+        
+        this.clouds = [cloud1, cloud2];
+
         // bee
         this.bee = this.add
             .sprite(this.scale.width / 1.275, this.scale.height / 1.7, "bee")
             .setOrigin(0.5, 1)
-            .setScale(3)
+            .setScale(4)
             .setRotation(1);
 
         this.beeLoopOriginX = this.bee.x;
@@ -286,7 +306,7 @@ class GameScene extends Phaser.Scene {
                 this.playerTileY = fullTileY;
                 if (this.shiftKey.isDown) {
                     if (this.playerTileX > fullTileX * 4) {
-                        this.playerTileX = 6 + fullTileX * 5;
+                        this.playerTileX = 0;
                     }
                     this.playerTileX += fullTileX;
                 } else {
@@ -313,7 +333,10 @@ class GameScene extends Phaser.Scene {
             this.player.tilePositionX = this.playerTileX;
             this.player.tilePositionY = this.playerTileY;
             this.lastMoveTime = time;
-        } else if (time > this.lastIdleFrameTime + this.idleFrameInterval) {
+        } else if (
+            !movementKeyDown &&
+            time > this.lastIdleFrameTime + this.idleFrameInterval
+        ) {
             // Cycle through idle frames
             this.playerTileX += fullTileX;
             if (this.playerTileX > fullTileX * 4) {
@@ -467,7 +490,23 @@ class GameScene extends Phaser.Scene {
                 }
             }
 
+            // Prevent bee from going below ground
+            if (this.bee.y > groundY + 16 * 3) {
+                this.bee.y = groundY + 16 * 3;
+            }
+
             this.lastBeeUpdateTime = time;
+        }
+
+        for (let i = 0; i < this.clouds.length; i++) {
+            const cloud = this.clouds[i];
+            const speed = i === 0 ? 0.5 : 0.3; // Different speeds for variety
+            cloud.x += speed;
+        
+            // If cloud goes off right edge, reset to left
+            if (cloud.x > this.scale.width + cloud.displayWidth / 2) {
+                cloud.x = -cloud.displayWidth / 2;
+            }
         }
 
         this.lastPointerX = this.input.activePointer.worldX;
