@@ -273,7 +273,7 @@ class GameScene extends Phaser.Scene {
 
     update(time: number) {
         // --- Horizontal Movement ---
-        const speed = this.shiftKey.isDown ? { x: 0, y: 0 } : { x: 0, y: 0 };
+        const speed = !this.shiftKey.isDown ? { x: 6, y: 0 } : { x: 8, y: 0 };
         let moved = false;
         const fullTileX = 16;
         const movementKeyDown = this.aKey.isDown || this.dKey.isDown;
@@ -374,7 +374,7 @@ class GameScene extends Phaser.Scene {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             const mouseMoving = pointerSpeed > 1.5; // Threshold for "moving"
-            const closeEnough = 60; // pixels
+            const closeEnough = 110; // pixels
 
             this.beeIdleTime += this.beeUpdateInterval;
 
@@ -382,23 +382,16 @@ class GameScene extends Phaser.Scene {
                 if (distance < closeEnough && !mouseMoving) {
                     // --- Infinity Loop Animation Around Cursor ---
                     const t = this.beeIdleTime / 1000;
-                    const a = 60;
+                    const a = 100; // Wider loop
 
                     // Infinity loop is always relative to pointer
-                    const loopTargetX =
-                        pointer.worldX +
+                    const x =
                         (a * Math.cos(t)) / (1 + Math.sin(t) * Math.sin(t));
-                    const loopTargetY =
-                        pointer.worldY +
+                    const y =
                         (a * Math.cos(t) * Math.sin(t)) /
-                            (1 + Math.sin(t) * Math.sin(t));
+                        (1 + Math.sin(t) * Math.sin(t));
 
-                    // Smoothly interpolate bee position to loop path
-                    const loopLerp = 0.12; // Lower = slower transition
-                    this.bee.x += (loopTargetX - this.bee.x) * loopLerp;
-                    this.bee.y += (loopTargetY - this.bee.y) * loopLerp;
-
-                    // Tangent angle for rotation
+                    // Calculate tangent for wobble and rotation
                     const dt = 0.01;
                     const t2 = t + dt;
                     const x2 =
@@ -406,12 +399,28 @@ class GameScene extends Phaser.Scene {
                     const y2 =
                         (a * Math.cos(t2) * Math.sin(t2)) /
                         (1 + Math.sin(t2) * Math.sin(t2));
-                    const dxdt = x2 - (loopTargetX - pointer.worldX);
-                    const dydt = y2 - (loopTargetY - pointer.worldY);
+                    const dxdt = x2 - x;
+                    const dydt = y2 - y;
                     const pathAngle = Math.atan2(dydt, dxdt);
 
+                    // Wobble perpendicular to tangent
+                    const wobbleAmplitude = 16;
+                    const wobbleFrequency = 3;
+                    const wobble =
+                        Math.sin(t * wobbleFrequency) * wobbleAmplitude;
+                    const wobbleX = Math.cos(pathAngle + Math.PI / 2) * wobble;
+                    const wobbleY = Math.sin(pathAngle + Math.PI / 2) * wobble;
+
+                    // Smoothly interpolate bee position to loop path + wobble
+                    const loopLerp = 0.08; // Lower = slower, smoother transition
+                    const targetX = pointer.worldX + x + wobbleX;
+                    const targetY = pointer.worldY + y + wobbleY;
+                    this.bee.x += (targetX - this.bee.x) * loopLerp;
+                    this.bee.y += (targetY - this.bee.y) * loopLerp;
+
+                    // Rotate to face tangent direction, with extra wobble
                     this.bee.rotation =
-                        pathAngle - Math.PI / 2 + Math.sin(t * 2) * 0.3;
+                        pathAngle - Math.PI / 2 + Math.sin(t * 2) * 0.25;
                 } else {
                     // --- Wavy Line Animation Directly Towards Cursor ---
                     const followSpeed = 0.05;
