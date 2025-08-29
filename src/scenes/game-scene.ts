@@ -251,18 +251,18 @@ class GameScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5)
             .setScale(5);
 
-            const cloud1 = this.add
+        const cloud1 = this.add
             .sprite(this.scale.width / 1.5, this.scale.height / 9, "cloud")
             .setOrigin(0.5, 0.5)
             .setScale(2.5)
             .setAlpha(0.8);
-        
+
         const cloud2 = this.add
             .sprite(this.scale.width / 9, this.scale.height / 6, "cloud-2")
             .setOrigin(0.5, 0.5)
             .setScale(2.5)
             .setAlpha(0.5);
-        
+
         this.clouds = [cloud1, cloud2];
 
         // bee
@@ -293,7 +293,7 @@ class GameScene extends Phaser.Scene {
 
     update(time: number) {
         // --- Horizontal Movement ---
-        const speed = !this.shiftKey.isDown ? { x: 6, y: 0 } : { x: 8, y: 0 };
+        const speed = !this.shiftKey.isDown ? { x: 6, y: 0 } : { x: 16, y: 0 };
         let moved = false;
         const fullTileX = 16;
         const movementKeyDown = this.aKey.isDown || this.dKey.isDown;
@@ -502,7 +502,7 @@ class GameScene extends Phaser.Scene {
             const cloud = this.clouds[i];
             const speed = i === 0 ? 0.5 : 0.3; // Different speeds for variety
             cloud.x += speed;
-        
+
             // If cloud goes off right edge, reset to left
             if (cloud.x > this.scale.width + cloud.displayWidth / 2) {
                 cloud.x = -cloud.displayWidth / 2;
