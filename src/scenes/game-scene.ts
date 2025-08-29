@@ -44,6 +44,10 @@ class GameScene extends Phaser.Scene {
     lastPointerY: number = 0;
     clouds: Phaser.GameObjects.Sprite[] = [];
 
+    textSprite!: Phaser.GameObjects.TileSprite;
+
+    lastMovementInputTime: number = 0;
+
     constructor() {
         super("scene-game");
     }
@@ -51,6 +55,7 @@ class GameScene extends Phaser.Scene {
     preload() {
         this.load.image("me", "/assets/me.png");
         this.load.image("grass", "/assets/grass.png");
+        this.load.image("text", "/assets/text.png");
         this.load.image("rock", "/assets/rock.png");
         this.load.image("rock-2", "/assets/rock-2.png");
         this.load.image("sun", "/assets/sun.png");
@@ -121,6 +126,14 @@ class GameScene extends Phaser.Scene {
             )
             .setOrigin(0, 0)
             .setScale(5);
+
+        // text
+
+        this.textSprite = this.add
+            .tileSprite(this.scale.width / 2, 32 * 5, 577, 324, "text")
+            .setOrigin(0.5, 0.5)
+            .setScale(0.8)
+            .setDepth(10);
 
         // tree
 
@@ -345,6 +358,24 @@ class GameScene extends Phaser.Scene {
             this.player.tilePositionX = this.playerTileX;
             this.player.tilePositionY = this.defaultPlayerTileY;
             this.lastIdleFrameTime = time;
+        }
+
+        // Fade text in and out
+        if (movementKeyDown) {
+            this.lastMovementInputTime = time;
+            // Fade out text
+            if (this.textSprite.alpha > 0) {
+                this.textSprite.alpha -= 0.05; // Adjust speed as needed
+                if (this.textSprite.alpha < 0) this.textSprite.alpha = 0;
+            }
+        } else {
+            // Only fade in if 15 seconds have passed since last movement
+            if (time - this.lastMovementInputTime > 15000) {
+                if (this.textSprite.alpha < 1) {
+                    this.textSprite.alpha += 0.05; // Adjust speed as needed
+                    if (this.textSprite.alpha > 1) this.textSprite.alpha = 1;
+                }
+            }
         }
 
         // --- Gravity and Jumping ---
